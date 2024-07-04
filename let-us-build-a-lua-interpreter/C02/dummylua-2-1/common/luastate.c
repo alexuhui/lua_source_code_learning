@@ -22,6 +22,12 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #include "luamem.h"
 
 typedef struct LX {
+    /**
+     * a pointer to a raw memory area associated with the given Lua state. 
+     * The application can use this area for any purpose; 
+     * Lua does notuse it for anything.
+     * 文档中表明，这个部分可以被应用层任意使用，Lua虚拟机本身并未用到这个地方。
+     */
     lu_byte extra_[LUA_EXTRASPACE];
     lua_State l;
 } LX;
@@ -53,10 +59,14 @@ static void stack_init(struct lua_State* L) {
     L->ci->previous = L->ci->next = NULL;
 }
 
+/**
+ * 创建lua 虚拟机
+ */
 struct lua_State* lua_newstate(lua_Alloc alloc, void* ud) {
     struct global_State* g;
     struct lua_State* L;
     
+    // 创建一个LG结构的实例
     struct LG* lg = (struct LG*)(*alloc)(ud, NULL, LUA_TTHREAD, sizeof(struct LG));
     if (!lg) {
         return NULL;
@@ -66,12 +76,31 @@ struct lua_State* lua_newstate(lua_Alloc alloc, void* ud) {
     g->frealloc = alloc;
     g->panic = NULL;
     
+    /**
+     * 将LX结构中的lua_State类型成员l的地址赋值给它。
+     * 也就是说，Lua虚拟机“主线程”实际上就是LX结构中的成员变量l。
+     */
     L = &lg->l.l;
+
+    // L->l_G = g
+    // 也就是说LG 中
+    // LX（l）成员中的 lua_State (l) 成员中的 global_State (l_G) 成员指向了 g (global_State) 成员
     G(L) = g;
+    // 而 g (global_State) 成员中的 mainthread（lua_State） 指向了 LX（l）成员中的 lua_State (l) 成员
     g->mainthread = L;
 
+    // 初始化lua_State
     stack_init(L);
 
+    /**
+     * 最终将 lua_State 返回到请求lua虚拟机实例的地方
+     * LG 充当了内存分配的辅助结构
+     * 这里饶了一圈，分配了3块内存：
+     * g ： global_State
+     * l ： lua_State
+     * extra_ ：lu_byte 
+     * g 和 l 之间提供了相互引用的指针
+     */
     return L;
 }
 
