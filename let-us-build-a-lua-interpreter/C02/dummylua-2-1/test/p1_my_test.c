@@ -13,7 +13,7 @@ static int add_op(lua_State* L){
 
     printf("------------------------- ci->func : %d\n", L->ci->func->value_.i);
     // 这个地方有点奇怪，需要返回 “返回值个数”，后面取值的时候才能正常
-    return 3;
+    return L->ci->nresult;
 }
 
 void test_add() { 
