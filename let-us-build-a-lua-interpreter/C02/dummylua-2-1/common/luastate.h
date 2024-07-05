@@ -93,11 +93,13 @@ typedef struct lua_State {
     struct lua_State* previous;
     /**
      * 和lua_State生命周期一致的函数调用信息
-     * 可以理解成函数调用栈的栈底？
+     * base_ci的func指针指向了栈的首个位置
+     * 可以理解成函数调用栈的栈底（整个调用过程可以看做链式栈，base_ci就是链头）
      */
     struct CallInfo base_ci;
     /**
      * 当前运行的CallInfo
+     * Lua虚拟机主线程实例化时的ci指针是指向base_ci的。
      */
     struct CallInfo* ci;
     // 指向全局状态

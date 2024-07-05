@@ -141,9 +141,14 @@ int luaD_precall(struct lua_State* L, StkId func, int nresult) {
             func = restorestack(L, func_diff);
 
             next_ci(L, func, nresult);                        
+
             int n = (*f)(L);
+            printf("nnnnnnnnnnnnnnnnnnnn = %d\n", n);
             assert(L->ci->func + n <= L->ci->top);
+            // 这个地方，感觉应该使用nresult作为返回值数量，但这个n，的调用的函数（luaL_pushcfunction 方法压入的函数）返回值
+            // 但看了一下lua源码也是这么干的
             luaD_poscall(L, L->top - n, n);
+            // luaD_poscall(L, L->top - nresult, nresult);
             return 1; 
         } break;
         default:break;

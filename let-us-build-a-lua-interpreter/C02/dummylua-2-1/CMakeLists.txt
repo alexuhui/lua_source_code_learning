@@ -6,7 +6,7 @@ project(dummylua)
 set(COMMON_SRC common/luamem.c common/luaobject.c common/luastate.c)
 set(CLIB_SRC clib/luaaux.c)
 set(VM_SRC vm/luado.c)
-set(TEST_SRC test/p1_test.c)
+set(TEST_SRC test/p1_test.c test/p1_my_test.c)
 set(SRC ${COMMON_SRC} ${CLIB_SRC} ${VM_SRC} ${TEST_SRC})
 
 # add the executable
