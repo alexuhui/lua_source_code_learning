@@ -26,7 +26,9 @@ int main(int argc, char** argv) {
     // printf("\n--------------------test case 11-------------------------\n");
     // p1_test_nestcall01();
 
-    test_add();
+    // test_add();
+    test_jmp();
+    test_jmp2();
 
     return 0;
 }

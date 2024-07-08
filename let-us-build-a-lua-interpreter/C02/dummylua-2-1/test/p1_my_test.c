@@ -1,4 +1,7 @@
 #include "../clib/luaaux.h"
+#include "../vm/luado.h"
+#include "assert.h"
+#include "setjmp.h"
 
 static int add_op(lua_State* L){
     int left = luaL_tointeger(L, -2);
@@ -39,4 +42,28 @@ void test_add() {
     printf("final stack size %d\n",luaL_stacksize(L));
 
     luaL_close(L);
+}
+
+jmp_buf b;
+void test_jmp()
+{
+    struct lua_State* L = luaL_newstate();
+    int ret = setjmp(b);
+    printf("setjum result = %d \n", ret);
+    if (ret == 0)
+        longjmp(b , 1);
+    
+    printf("000000 ret = %d \n", ret);
+
+    if (ret == 1)
+        longjmp(b , 2);
+
+    // luaD_throw(L, LUA_ERRERR);
+
+    printf("111111 ret = %d \n", ret);
+}
+
+void test_jmp2()
+{
+    printf("test_jmp2");
 }
