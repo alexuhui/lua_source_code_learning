@@ -29,11 +29,25 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #define black2gray(o) resetbit((o)->marked, BLACKBIT)
 #define sweepwholelist(L, list) sweeplist(L, list, MAX_LUMEM)
 
+/**
+ * 分配可GC对象
+ */
 struct GCObject* luaC_newobj(struct lua_State* L, int tt_, size_t size) {
     struct global_State* g = G(L);
     struct GCObject* obj = (struct GCObject*)luaM_realloc(L, NULL, 0, size);
+    /**
+     * 这里经过一系列的运算的精妙之处的哪里？
+     * 似乎本质就是：obj->marked = g->currentwhite 啊
+     */
     obj->marked = luaC_white(g);
+    /**
+     * 把 allgc 链表当前头部设置到 obj下个节点
+     * 结合 g->allgc = obj; 把obj插入到链表头部
+     */
     obj->next = g->allgc;
+    /**
+     * 设置 obj 类型
+     */
     obj->tt_ = tt_;
     g->allgc = obj;
 
