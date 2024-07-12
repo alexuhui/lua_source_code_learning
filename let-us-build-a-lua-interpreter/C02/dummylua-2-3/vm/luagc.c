@@ -26,23 +26,46 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 
 #define gettotalbytes(g) (g->totalbytes + g->GCdebt)
 #define white2gray(o) resetbits((o)->marked, WHITEBITS)
+/** 灰色标记为黑色 */
 #define gray2black(o) l_setbit((o)->marked, BLACKBIT)
+/** 黑色标记为灰色 */
 #define black2gray(o) resetbit((o)->marked, BLACKBIT)
 #define sweepwholelist(L, list) sweeplist(L, list, MAX_LUMEM)
 
 struct GCObject* luaC_newobj(struct lua_State* L, lu_byte tt_, size_t size) {
+/**
+ * 分配可GC对象
+ */
     struct global_State* g = G(L);
     struct GCObject* obj = (struct GCObject*)luaM_realloc(L, NULL, 0, size);
+    /**
+     * 这里经过一系列的运算的精妙之处的哪里？
+     * 似乎本质就是：obj->marked = g->currentwhite 啊
+     */
     obj->marked = luaC_white(g);
+    /**
+     * 把 allgc 链表当前头部设置到 obj下个节点
+     * 结合 g->allgc = obj; 把obj插入到链表头部
+     */
     obj->next = g->allgc;
+    /**
+     * 设置 obj 类型
+     */
     obj->tt_ = tt_;
     g->allgc = obj;
 
     return obj;
 }
 
+/**
+ * 标记对象
+ */
 void reallymarkobject(struct lua_State* L, struct GCObject* gco) {
     struct global_State* g = G(L);
+    /**
+     * 白色标记成灰色
+     * 怎么没有看到是否被引用的判断？
+     */
     white2gray(gco);
 
     switch(gco->tt_) {
@@ -63,10 +86,16 @@ void reallymarkobject(struct lua_State* L, struct GCObject* gco) {
     }
 }
 
+/**
+ * 获取需要“借贷”（预支）的内存
+ */
 static l_mem get_debt(struct lua_State* L) {
     struct global_State* g = G(L);
     int stepmul = g->GCstepmul; 
     l_mem debt = g->GCdebt;
+    /**
+     * 为负数表示之前预支的内存尚未用完
+     */
     if (debt <= 0) {
         return 0;
     }
@@ -81,6 +110,9 @@ static l_mem get_debt(struct lua_State* L) {
 static void restart_collection(struct lua_State* L) {
     struct global_State* g = G(L);
     g->gray = g->grayagain = NULL;
+    /**
+     * 标记主线程（白变灰再变黑）
+     */
     markobject(L, g->mainthread); 
 }
 
@@ -93,6 +125,9 @@ static lu_mem traversethread(struct lua_State* L, struct lua_State* th) {
     return sizeof(struct lua_State) + sizeof(TValue) * th->stack_size + sizeof(struct CallInfo) * th->nci;
 }
 
+/**
+ * 标记传播
+ */
 static void propagatemark(struct lua_State* L) {
     struct global_State* g = G(L);
     if (!g->gray) {
@@ -156,6 +191,9 @@ static lu_mem freeobj(struct lua_State* L, struct GCObject* gco) {
     return 0;
 }
 
+/**
+ * 清理列表
+ */
 static struct GCObject** sweeplist(struct lua_State* L, struct GCObject** p, size_t count) {
     struct global_State* g = G(L);
     lu_byte ow = otherwhite(g);
@@ -201,6 +239,7 @@ static lu_mem singlestep(struct lua_State* L) {
     switch(g->gcstate) {
         case GCSpause: {
             g->GCmemtrav = 0;
+            // 重置gc，标记主线程
             restart_collection(L);
             g->gcstate = GCSpropagate;
             return g->GCmemtrav;
@@ -258,6 +297,9 @@ static void setpause(struct lua_State* L) {
     setdebt(L, debt);
 }
 
+/**
+ * 推进GC操作和状态变更
+ */
 void luaC_step(struct lua_State*L) {
     struct global_State* g = G(L);
     l_mem debt = get_debt(L);

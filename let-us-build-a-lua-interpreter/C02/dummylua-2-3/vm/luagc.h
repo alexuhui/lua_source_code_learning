@@ -58,7 +58,13 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #define isdead(g, o) isdeadm(otherwhite(g), (o)->marked)
 #define changewhite(o) ((o)->marked ^= WHITEBITS)
 
+/**
+ * 将对象转换成 GCUnion 类型，并返回 GCUnion 的 gc 字段（GCObject 类型）
+ */
 #define obj2gco(o) (&cast(union GCUnion*, o)->gc)
+/**
+ * 将对象转换成 GCUnion 类型，并返回 GCUnion 的 th 字段（lua_State 类型）
+ */
 #define gco2th(o)  check_exp((o)->tt_ == LUA_TTHREAD, &cast(union GCUnion*, o)->th)
 #define gco2ts(o) check_exp((o)->tt_ == LUA_SHRSTR || (o)->tt_ == LUA_LNGSTR, &cast(union GCUnion*, o)->ts)
 #define gcvalue(o) ((o)->value_.gc)
@@ -66,8 +72,20 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #define iscollectable(o) \
     ((o)->tt_ == LUA_TTHREAD || (o)->tt_ == LUA_SHRSTR || (o)->tt_ == LUA_LNGSTR)
 
+/**
+ * 标记GCobject
+ */
 #define markobject(L, o) if (iswhite(o)) { reallymarkobject(L, obj2gco(o)); }
+/**
+ * 标记可回收变量
+ */
 #define markvalue(L, o)  if (iscollectable(o) && iswhite(gcvalue(o))) { reallymarkobject(L, gcvalue(o)); }
+/**
+ * *** 这里还没看懂
+ * 从调用情况看，字面意思是：
+ * 先把  global_State 的 gray（灰色标记列表） 赋值给 lua_State 的 gclist 
+ * gco 转换成 GCUnion 类型后的 th（lua_State）值，赋值给 global_State 的 gray（灰色标记列表） 
+ */
 #define linkgclist(gco, prev) { (gco)->gclist = prev; prev = obj2gco(gco); }
 
 // try trigger gc
