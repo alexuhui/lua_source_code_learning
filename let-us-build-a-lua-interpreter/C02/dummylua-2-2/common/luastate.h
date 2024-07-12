@@ -180,7 +180,7 @@ typedef struct global_State {
      */
     l_mem GCdebt;                   // GCdebt will be negative
     /**
-     * 一次GC步骤操作可能会调用若干次dummylua项目中GC模块的single_step函数。
+     * 一次GC操作可能会调用若干次dummylua项目中GC模块的single_step函数。
      * 每次执行single_step函数，处理的内存总量会被记录在GCmemtrav变量中。
      * 每当single_step函数执行完时，它会返回，然后被置0。
      * 返回值会被累加到临时变量中，当临时变量达到一定值的时候，会退出GC步骤操作。

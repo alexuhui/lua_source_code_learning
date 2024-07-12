@@ -74,7 +74,13 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	 (o)->tt_ == LUA_TLCL    || \
 	 (o)->tt_ == LUA_TCCL)
 
+/**
+ * 标记GCobject
+ */
 #define markobject(L, o) if (iswhite(o)) { reallymarkobject(L, obj2gco(o)); }
+/**
+ * 标记可回收变量
+ */
 #define markvalue(L, o)  if (iscollectable(o) && iswhite(gcvalue(o))) { reallymarkobject(L, gcvalue(o)); }
 /**
  * *** 这里还没看懂
