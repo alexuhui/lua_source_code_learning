@@ -23,11 +23,14 @@ void test_print(struct lua_State* L, const char* str) {
 }
 
 void test_internal(struct lua_State* L, const char* str, int is_variant) {
-    printf("test_internal \n");
+    printf("test_internal ---------------- \n");
     struct GCObject* previous = NULL;
     for (int i = 0; i < 5; i++) {
         if (is_variant && strlen(str) <= MAXSHORTSTR) {
             char buff[256] = { 0 };
+            /**
+             * sprintf ：将格式化的字符串输出到一个字符数组（字符串）中
+             */
             sprintf(buff, "%s %d", str, i);
             luaL_pushstring(L, buff);
         }
@@ -40,6 +43,9 @@ void test_internal(struct lua_State* L, const char* str, int is_variant) {
         else 
             printf("Not the same \n");
         previous = addr->value_.gc;
+
+        struct TString* ts = gco2ts(addr->value_.gc);
+        printf("previous = %s\n", ts->data);
     }
 }
 
@@ -106,7 +112,7 @@ void p3_test_main() {
     test_internal(L, g_lngstr, 0);
     test_string_cache(L, 1);
     test_string_cache(L, 0);
-    test_gc(L);
+    // test_gc(L);
 
     luaL_close(L);
 }

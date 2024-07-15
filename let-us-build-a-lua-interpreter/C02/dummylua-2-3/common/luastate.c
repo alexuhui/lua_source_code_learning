@@ -253,13 +253,20 @@ void lua_pushstring(struct lua_State* L, const char* str) {
     increase_top(L);
 }
 
+/**
+ * 通过下标（相对地址）计算栈地址
+ * @param L lua_State
+ * @param idx 相对地址（相对当前函数(idx >= 0)，或者相对栈顶（idx < 0））
+ */
 TValue* index2addr(struct lua_State* L, int idx) {
     if (idx >= 0) {
         assert(L->ci->func + idx < L->ci->top);
+        /** 如果传入的index 大于0，从函数地址func 地址加上index */
         return L->ci->func + idx;
     }
     else {
         assert(L->top + idx > L->ci->func);
+        /** 如果传入的index 小于0，从栈顶（top）地址减去index的绝对值 */
         return L->top + idx;
     }
 }
