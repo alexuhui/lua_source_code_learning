@@ -26,6 +26,12 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #include "luatable.h"
 
 typedef struct LX {
+    /**
+     * a pointer to a raw memory area associated with the given Lua state. 
+     * The application can use this area for any purpose; 
+     * Lua does notuse it for anything.
+     * 文档中表明，这个部分可以被应用层任意使用，Lua虚拟机本身并未用到这个地方。
+     */
     lu_byte extra_[LUA_EXTRASPACE];
     lua_State l;
 } LX;
@@ -84,7 +90,9 @@ static unsigned int makeseed(struct lua_State* L) {
 
     return luaS_hash(L, buff, p, h);
 }
-
+/**
+ * 创建lua 虚拟机
+ */
 struct lua_State* lua_newstate(lua_Alloc alloc, void* ud) {
     struct global_State* g;
     struct lua_State* L;
@@ -98,10 +106,19 @@ struct lua_State* lua_newstate(lua_Alloc alloc, void* ud) {
     g->frealloc = alloc;
     g->panic = NULL;
     
+    /**
+     * 将LX结构中的lua_State类型成员l的地址赋值给它。
+     * 也就是说，Lua虚拟机“主线程”实际上就是LX结构中的成员变量l。
+     */
     L = &lg->l.l;
     L->tt_ = LUA_TTHREAD;
     L->nci = 0;
+
+    // L->l_G = g
+    // 也就是说LG 中
+    // LX（l）成员中的 lua_State (l) 成员中的 global_State (l_G) 成员指向了 g (global_State) 成员
     G(L) = g;
+    // 而 g (global_State) 成员中的 mainthread（lua_State） 指向了 LX（l）成员中的 lua_State (l) 成员
     g->mainthread = L;
 
     // gc init
@@ -122,16 +139,28 @@ struct lua_State* lua_newstate(lua_Alloc alloc, void* ud) {
     L->marked = luaC_white(g);
     L->gclist = NULL;
 
+    // 初始化lua_State
     stack_init(L);
     luaS_init(L);
     init_registry(L);
 
+    luaS_init(L);
+    /**
+     * 最终将 lua_State 返回到请求lua虚拟机实例的地方
+     * LG 充当了内存分配的辅助结构
+     * 这里饶了一圈，分配了3块内存：
+     * g ： global_State
+     * l ： lua_State
+     * extra_ ：lu_byte 
+     * g 和 l 之间提供了相互引用的指针
+     */
     return L;
 }
 
 #define fromstate(L) (cast(LX*, cast(lu_byte*, (L)) - offsetof(LX, l)))
 
 static void free_stack(struct lua_State* L) {
+    global_State* g = G(L);
     luaM_free(L, L->stack, sizeof(TValue));
     L->stack = L->stack_last = L->top = NULL;
     L->stack_size = 0;
@@ -271,14 +300,20 @@ int lua_getglobal(struct lua_State* L) {
     increase_top(L);
     return 1;
 }
-
+/**
+ * 通过下标（相对地址）计算栈地址
+ * @param L lua_State
+ * @param idx 相对地址（相对当前函数(idx >= 0)，或者相对栈顶（idx < 0））
+ */
 TValue* index2addr(struct lua_State* L, int idx) {
     if (idx >= 0) {
         assert(L->ci->func + idx < L->ci->top);
+        /** 如果传入的index 大于0，从函数地址func 地址加上index */
         return L->ci->func + idx;
     }
     else {
         assert(L->top + idx > L->ci->func);
+        /** 如果传入的index 小于0，从栈顶（top）地址减去index的绝对值 */
         return L->top + idx;
     }
 }
