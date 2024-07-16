@@ -221,6 +221,11 @@ void setgco(StkId target, struct GCObject* gco) {
     target->tt_ = gco->tt_;
 }
 
+/**
+ * 替换TValue在值，把value(TValue)  value_ 、 tt_ 字段设置到target
+ * @param target 被设置的对象
+ * @param value 需要设置的新对象
+ */
 void setobj(StkId target, StkId value) {
     target->value_ = value->value_;
     target->tt_ = value->tt_;
@@ -269,6 +274,9 @@ void lua_pushstring(struct lua_State* L, const char* str) {
     increase_top(L);
 }
 
+/**
+ * 创建 table 并设置到 lua_State 的栈顶
+ */
 int lua_createtable(struct lua_State* L) {
     struct Table* tbl = luaH_new(L);
     struct GCObject* gco = obj2gco(tbl);
@@ -277,10 +285,17 @@ int lua_createtable(struct lua_State* L) {
     return 1;
 }
 
+/**
+ * 将栈顶部两个值（对应key, value） 设置到table
+ * @param L lua_State 
+ * @param idx table 所在栈地址
+ */
 int lua_settable(struct lua_State* L, int idx) {
     TValue* o = index2addr(L, idx);
     struct Table* t = gco2tbl(gcvalue(o));
+    // 将栈顶倒数第二，倒数第一分别作为key、value添加到table
     luaV_settable(L, t, L->top - 2, L->top - 1);
+    // 栈顶两个值（对应key, value）设置到table后，栈顶指针下移两个单位
     L->top = L->top - 2;
     return 1;
 }

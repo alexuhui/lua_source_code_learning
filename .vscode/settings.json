@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "luaobject.h": "c"
+        "luaobject.h": "c",
+        "exception": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "xutility": "c",
+        "*.rh": "c"
     }
 }

@@ -67,7 +67,13 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  */
 #define gco2th(o)  check_exp((o)->tt_ == LUA_TTHREAD, &cast(union GCUnion*, o)->th)
 #define gco2ts(o) check_exp((o)->tt_ == LUA_SHRSTR || (o)->tt_ == LUA_LNGSTR, &cast(union GCUnion*, o)->ts)
+/**
+ * 将对象转换成 GCUnion 类型，并返回 GCUnion 的 tbl 字段（Table 类型）
+ */
 #define gco2tbl(o) check_exp((o)->tt_ == LUA_TTABLE, &cast(union GCUnion*, o)->tbl)
+/**
+ * 获取gc对象
+ */
 #define gcvalue(o) ((o)->value_.gc)
 
 #define iscollectable(o) \
@@ -93,6 +99,13 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #define luaC_condgc(pre, L, pos) if (G(L)->GCdebt > 0) { pre; luaC_step(L); pos; } 
 #define luaC_checkgc(L) luaC_condgc((void)0, L, (void)0)
 
+/**
+ * 判断是否需要把 t 由黑色变回灰色
+ * 如果t是黑色，新增对象可回收，且是白色，则把 t 由黑色置灰
+ * @param L lua_State
+ * @param t 引用新增对象的对象
+ * @param o 新增对象
+ */
 #define luaC_barrierback(L, t, o) \
     (isblack(t) && iscollectable(o) && iswhite(gcvalue(o))) ? luaC_barrierback_(L, t, o) : cast(void, 0)
 

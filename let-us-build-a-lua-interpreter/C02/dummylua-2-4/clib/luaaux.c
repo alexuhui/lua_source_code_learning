@@ -159,10 +159,16 @@ TValue* luaL_index2addr(struct lua_State* L, int idx) {
     return index2addr(L, idx);
 }
 
+/** 创建table */
 int luaL_createtable(struct lua_State* L) {
     return lua_createtable(L);
 }
 
+/**
+ * 将栈顶部两个值（对应key, value） 设置到table
+ * @param L lua_State lua线程
+ * @param idx table栈地址
+ */
 int luaL_settable(struct lua_State* L, int idx) {
     return lua_settable(L, idx);
 }

@@ -87,6 +87,12 @@ static const TValue* getgeneric(struct lua_State* L, struct Table* t, const TVal
     return luaO_nilobject;
 }
 
+/**
+ * 设置lua哈希表大小
+ * @param L lua_State
+ * @param t Table
+ * @param size 哈希表大小，size == 0 表示初始化，node 赋值为 dummynode_
+ */
 static void setnodesize(struct lua_State* L, struct Table* t, int size) {
     if (size == 0) {
         t->lsizenode = 0;
@@ -114,6 +120,9 @@ static void setnodesize(struct lua_State* L, struct Table* t, int size) {
     }
 }
 
+/**
+ * 创建并初始化table
+ */
 struct Table* luaH_new(struct lua_State* L) {
     struct GCObject* o = luaC_newobj(L, LUA_TTABLE, sizeof(struct Table));
     struct Table* t = gco2tbl(o);

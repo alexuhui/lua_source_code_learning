@@ -362,6 +362,10 @@ void luaC_fix(struct lua_State* L, struct GCObject* o) {
     white2gray(o);
 }
 
+/**
+ * 置灰
+ * table 中 插入白色gc对象，把 table 重新设置为灰色
+ */
 void luaC_barrierback_(struct lua_State* L, struct Table* t, const TValue* o) {
     struct global_State* g = G(L);
     lua_assert(isblack(t) && iswhite(o));
