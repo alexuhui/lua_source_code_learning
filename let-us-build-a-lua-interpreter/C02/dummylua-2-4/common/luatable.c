@@ -222,6 +222,12 @@ const TValue* luaH_getstr(struct lua_State* L, struct Table* t, struct TString* 
     }
 }
 
+/**
+ * 查询table对应key的值
+ * @param L lua_State
+ * @param t table
+ * @param key 键
+ */
 const TValue* luaH_get(struct lua_State* L, struct Table* t, const TValue* key) {
     switch(key->tt_) {
         case LUA_TNIL:   return luaO_nilobject;
@@ -400,6 +406,9 @@ static void rehash(struct lua_State* L, struct Table* t, const TValue* key) {
     luaH_resize(L, t, asize, totaluse - array_used_num);
 }
 
+/**
+ * 往table插入新的key
+ */
 TValue* luaH_newkey(struct lua_State* L, struct Table* t, const TValue* key) {
     if (ttisnil(key)) {
         luaD_throw(L, LUA_ERRRUN);
@@ -407,6 +416,7 @@ TValue* luaH_newkey(struct lua_State* L, struct Table* t, const TValue* key) {
 
     TValue k;
     if (ttisnumber(key)) {
+        // key不能为空
         if (lua_numisnan(key->value_.f)) {
             luaD_throw(L, LUA_ERRRUN);
         }
