@@ -51,7 +51,14 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #define LUA_ENV "_ENV"
 #define LUA_LOADED "_LOADED"
 #define LUA_UNSIGNED unsigned LUA_INTEGER 
+/**
+ * lua_assert(c) 实际上什么都不做，它将参数 c 强制转换为 void 类型并丢弃。
+ * 这种定义通常出现在发布或优化版本的代码中，因为断言在生产环境中通常是不需要的，它们可能会减慢程序的运行速度。
+ */
 #define lua_assert(c) ((void)0)
+/**
+ * check_exp宏的作用是检查条件c，如果c为真，则执行表达式e。
+ */
 #define check_exp(c, e) (lua_assert(c), e)
 
 // ERROR CODE 
@@ -62,6 +69,11 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #define LUA_ERRLEXER 4
 #define LUA_ERRPARSER 5
 
+/**
+ * 类型转换
+ * @param t 目标类型
+ * @param exp 待转对象
+ */
 #define cast(t, exp) ((t)(exp))
 #define savestack(L, o) ((o) - (L)->stack)
 #define restorestack(L, o) ((L)->stack + (o)) 

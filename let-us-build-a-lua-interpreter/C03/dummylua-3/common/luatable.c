@@ -87,6 +87,12 @@ static const TValue* getgeneric(struct lua_State* L, struct Table* t, const TVal
     return luaO_nilobject;
 }
 
+/**
+ * 设置lua哈希表大小
+ * @param L lua_State
+ * @param t Table
+ * @param size 哈希表大小，size == 0 表示初始化，node 赋值为 dummynode_
+ */
 static void setnodesize(struct lua_State* L, struct Table* t, int size) {
     if (size == 0) {
         t->lsizenode = 0;
@@ -114,6 +120,9 @@ static void setnodesize(struct lua_State* L, struct Table* t, int size) {
     }
 }
 
+/**
+ * 创建并初始化table
+ */
 struct Table* luaH_new(struct lua_State* L) {
     struct GCObject* o = luaC_newobj(L, LUA_TTABLE, sizeof(struct Table));
     struct Table* t = gco2tbl(o);
@@ -213,6 +222,12 @@ const TValue* luaH_getstr(struct lua_State* L, struct Table* t, struct TString* 
     }
 }
 
+/**
+ * 查询table对应key的值
+ * @param L lua_State
+ * @param t table
+ * @param key 键
+ */
 const TValue* luaH_get(struct lua_State* L, struct Table* t, const TValue* key) {
     switch(key->tt_) {
         case LUA_TNIL:   return luaO_nilobject;
@@ -396,6 +411,7 @@ TValue* luaH_newkey(struct lua_State* L, struct Table* t, const TValue* key) {
 
     TValue k;
     if (ttisnumber(key)) {
+        // key不能为空
         if (lua_numisnan(key->value_.f)) {
             luaD_throw(L, LUA_ERRRUN);
         }

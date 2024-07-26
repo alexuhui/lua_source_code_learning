@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.0)
 
 # set the project name
 project(dummylua)
@@ -21,6 +21,10 @@ ENDIF()
 IF (WIN32)
 	target_compile_definitions(dummylua PRIVATE _WINDOWS_PLATFORM_=1)
 ENDIF()
+# 添加 /utf-8 编译器选项
+if (WIN32)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /utf-8")
+endif()
 
 target_include_directories(dummylua PUBLIC
                           "${CMAKE_CURRENT_SOURCE_DIR}/common"

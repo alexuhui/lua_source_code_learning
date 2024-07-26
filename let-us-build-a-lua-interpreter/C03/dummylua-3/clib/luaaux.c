@@ -24,20 +24,41 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #include "../common/luatable.h"
 #include "../vm/luafunc.h"
 
+/**
+ * 默认的内存分配函数
+ * @param ud 一个指向用户数据的指针，通常用于传递给分配函数以保持上下文信息。
+ * @param ptr 表示要被重新分配的内存，一个指向已分配内存的指针，如果该参数不为 NULL，则表示需要释放这块内存。
+ * @param osize 表示旧内存的大小（也就是ptr所指向的内存块的大小）
+ * @param nsize 表示当前要开辟的新内存块大小。
+ */
 static void* l_alloc(void* ud, void* ptr, size_t osize, size_t nsize) {
     (void)ud;
     (void)osize;
 
     // printf("l_alloc nsize:%ld\n", nsize);
     if (nsize == 0) {
+        // nsize 为零表示释放内存
         free(ptr);
         return NULL;
     }
 
+    /**
+     * realloc 函数是 C 语言标准库中的一个函数，用于重新分配已分配的内存块
+     * void* realloc(void* ptr, size_t size);
+     * 
+     * void* ptr：指向已分配内存的指针。如果 ptr 为 NULL，则 realloc 相当于调用 malloc 函数分配一块大小为 size 的内存。
+     * size_t size：请求分配的新内存大小（以字节为单位）
+     */ 
     return realloc(ptr, nsize);
 }
 
+/** 
+ * 创建Lua虚拟机的函数
+ * 创建lua线程实例，设置内存分配函数
+ * 返回 lua_State 记录线程上下文信息
+*/
 struct lua_State* luaL_newstate() {
+    // 设置默认的内存分配函数
     struct lua_State* L = lua_newstate(&l_alloc, NULL);
     return L;
 }
@@ -186,10 +207,16 @@ TValue* luaL_index2addr(struct lua_State* L, int idx) {
     return index2addr(L, idx);
 }
 
+/** 创建table */
 int luaL_createtable(struct lua_State* L) {
     return lua_createtable(L);
 }
 
+/**
+ * 将栈顶部两个值（对应key, value） 设置到table
+ * @param L lua_State lua线程
+ * @param idx table栈地址
+ */
 int luaL_settable(struct lua_State* L, int idx) {
     return lua_settable(L, idx);
 }
@@ -258,7 +285,7 @@ int luaL_loadfile(struct lua_State* L, const char* filename) {
 	l_fopen(&fptr, filename, "rb");
 	if (fptr == NULL)
 	{
-		printf("can not open file %s", filename);
+		printf("can not open file %s\n", filename);
 		return LUA_ERRERR;
 	}
 

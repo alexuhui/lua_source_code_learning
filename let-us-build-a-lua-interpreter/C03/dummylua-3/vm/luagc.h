@@ -58,13 +58,25 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 #define isdead(g, o) isdeadm(otherwhite(g), (o)->marked)
 #define changewhite(o) ((o)->marked ^= WHITEBITS)
 
+/**
+ * 将对象转换成 GCUnion 类型，并返回 GCUnion 的 gc 字段（GCObject 类型）
+ */
 #define obj2gco(o) (&cast(union GCUnion*, o)->gc)
+/**
+ * 将对象转换成 GCUnion 类型，并返回 GCUnion 的 th 字段（lua_State 类型）
+ */
 #define gco2th(o)  check_exp((o)->tt_ == LUA_TTHREAD, &cast(union GCUnion*, o)->th)
 #define gco2ts(o) check_exp((o)->tt_ == LUA_SHRSTR || (o)->tt_ == LUA_LNGSTR, &cast(union GCUnion*, o)->ts)
+/**
+ * 将对象转换成 GCUnion 类型，并返回 GCUnion 的 tbl 字段（Table 类型）
+ */
 #define gco2tbl(o) check_exp((o)->tt_ == LUA_TTABLE, &cast(union GCUnion*, o)->tbl)
 #define gco2lclosure(o) check_exp((o)->tt_ == LUA_TLCL, &cast(union GCUnion*, o)->cl.l)
 #define gco2cclosure(o) check_exp((o)->tt_ == LUA_TCCL, &cast(union GCUnion*, o)->cl.c)
 #define gco2proto(o) check_exp((o)->tt_ == LUA_TPROTO, &cast(union GCUnion*, o)->p)
+/**
+ * 获取gc对象
+ */
 #define gcvalue(o) ((o)->value_.gc)
 
 #define iscollectable(o) \
@@ -76,14 +88,33 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 	 (o)->tt_ == LUA_TCCL	 || \
 	 (o)->tt_ == LUA_TPROTO	)
 
+/**
+ * 标记GCobject
+ */
 #define markobject(L, o) if (iswhite(o)) { reallymarkobject(L, obj2gco(o)); }
+/**
+ * 标记可回收变量
+ */
 #define markvalue(L, o)  if (iscollectable(o) && iswhite(gcvalue(o))) { reallymarkobject(L, gcvalue(o)); }
+/**
+ * *** 这里还没看懂
+ * 从调用情况看，字面意思是：
+ * 先把  global_State 的 gray（灰色标记列表） 赋值给 lua_State 的 gclist 
+ * gco 转换成 GCUnion 类型后的 th（lua_State）值，赋值给 global_State 的 gray（灰色标记列表） 
+ */
 #define linkgclist(gco, prev) { (gco)->gclist = prev; prev = obj2gco(gco); }
 
 // try trigger gc
 #define luaC_condgc(pre, L, pos) if (G(L)->GCdebt > 0) { pre; luaC_step(L); pos; } 
 #define luaC_checkgc(L) luaC_condgc((void)0, L, (void)0)
 
+/**
+ * 判断是否需要把 t 由黑色变回灰色
+ * 如果t是黑色，新增对象可回收，且是白色，则把 t 由黑色置灰
+ * @param L lua_State
+ * @param t 引用新增对象的对象
+ * @param o 新增对象
+ */
 #define luaC_barrierback(L, t, o) \
     (isblack(t) && iscollectable(o) && iswhite(gcvalue(o))) ? luaC_barrierback_(L, t, o) : cast(void, 0)
 

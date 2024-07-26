@@ -121,6 +121,7 @@ int luaD_rawrunprotected(struct lua_State* L, Pfunc f, void* ud) {
 }
 
 static struct CallInfo* next_ci(struct lua_State* L, StkId func, int nresult) {
+    struct global_State* g = G(L);
     struct CallInfo* ci;
 
     if (L->ci->next) {
@@ -167,7 +168,10 @@ int luaD_precall(struct lua_State* L, StkId func, int nresult) {
             next_ci(L, func, nresult);                        
             int n = (*f)(L);
             assert(L->ci->func + n <= L->ci->top);
+            // 这个地方，感觉应该使用nresult作为返回值数量，但这个n是当前调用的函数（luaL_pushcfunction 压入的函数地址）的返回值
+            // 但看了一下lua源码也是这么干的
             luaD_poscall(L, L->top - n, n);
+            // luaD_poscall(L, L->top - nresult, nresult);
             return 1; 
         } break;
 		case LUA_TLCL: {

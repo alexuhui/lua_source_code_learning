@@ -123,6 +123,7 @@ static void test_gc(struct lua_State* L) {
 void p4_test_main() {
     struct lua_State* L = luaL_newstate();
 
+    // 创建table
     luaL_createtable(L);
     test_kv(L);
     luaL_pop(L); // pop table

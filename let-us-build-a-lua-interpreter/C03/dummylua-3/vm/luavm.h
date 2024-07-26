@@ -32,6 +32,12 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     if (luaV_fastget(L, t, k, luaH_get, slot)) { setobj(v, cast(TValue*, slot));  } \
     else luaV_finishget(L, t, v, slot); }
 
+/**
+ * 快速设置table（table中已有相同k的元素，替换成v）
+ *  ** t 不是table, slot 置空，返回0
+ *  ** t 是table, 看看该key是否已经有值，没有值（slot为空），返回0
+ *  ** t 是table, 该key已经有值（slot不为空），slot 的值为新设置的对象，把table置灰（如果slot是gc对象），返回1
+ */
 #define luaV_fastset(L, t, k, v, get, slot) \
     (!ttistable(t) ? (slot = NULL, 0) : \
      (slot = cast(TValue*, get(L, t, k)), \
@@ -39,6 +45,11 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
             (setobj(slot, v), \
             luaC_barrierback(L, t, slot), 1))))
 
+/**
+ * 设置table
+ * 先查询table对应key，如果有就替换
+ * 没有就插入
+ */
 #define luaV_settable(L, t, k, v) { TValue* slot = NULL; \
     if (!luaV_fastset(L, t, k, v, luaH_get, slot)) \
         luaV_finishset(L, t, k, v, slot);}

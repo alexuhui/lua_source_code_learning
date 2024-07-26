@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/let-us-build-a-lua-interpreter/C03/dummylua-3/common"
             ],
             "defines": [
                 "_DEBUG",
