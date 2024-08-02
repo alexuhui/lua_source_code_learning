@@ -26,16 +26,29 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 typedef char* (*lua_Reader)(struct lua_State* L, void* data, size_t* size);
 
 #define MIN_BUFF_SIZE 32 
+/**
+ * 读取文件，并填充到Zio
+ */
 #define zget(z) (((z)->n--) > 0 ? (*(z)->p++) : luaZ_fill(z))
 #define luaZ_resetbuffer(ls) (ls->buff->n = 0)
 #define luaZ_buffersize(ls) (ls->buff->size)
 
+/**
+ * 文本读取缓存
+ */
 typedef struct LoadF {
     FILE* f;
     char buff[BUFSIZE]; // read the file stream into buff
 	int n;		       // how many char you have read
 } LoadF;
 
+/**
+ * 1)Zio模块通过外部指定的read函数，从Lua脚本文件中读取BUFSIZE个字符，
+ *   并存入LoadF结构的buff中，它的n值记录了读取了多少个字符。
+ * 2)Zio的p指针指向LoadF的buff数组，并且将LoadF中的n赋值给zio->n。
+ * 3)将∗p赋值给lexstate->current，接着zio->p++，然后zio->n--。
+ *   当zio->n小于等于0时，在下一次调用luaX_next函数时，Zio模块会重新从文件中读取新的BUFSIZE个字符，重置LoadF结构的buff数组、n、zio->p和zio->n。
+ */
 typedef struct Zio {
 	lua_Reader reader;		// read buffer to p
 	int n;					// the number of unused bytes
@@ -44,6 +57,9 @@ typedef struct Zio {
 	struct lua_State* L;
 } Zio;
 
+/**
+ * 初始化Zio结构体
+ */
 void luaZ_init(struct lua_State* L, Zio* zio, lua_Reader reader, void* data);
 
 // if fill success, then it will return next character in ASCII table, or it will return -1

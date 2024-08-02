@@ -280,6 +280,11 @@ static void init_upval(struct lua_State* L) {
 	}
 }
 
+/**
+ * 加载lua脚本
+ * @param L lua_State
+ * @param filename 脚本路径
+ */
 int luaL_loadfile(struct lua_State* L, const char* filename) {
 	FILE* fptr = NULL;
 	l_fopen(&fptr, filename, "rb");

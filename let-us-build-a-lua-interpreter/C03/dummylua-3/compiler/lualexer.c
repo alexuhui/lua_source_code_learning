@@ -27,6 +27,9 @@ void luaX_init(struct lua_State* L)
 	}
 }
 
+/**
+ * 初始化 ls (LexState)
+ */
 void luaX_setinput(struct lua_State* L, LexState* ls, Zio* z, struct MBuffer* buffer, struct Dyndata* dyd, TString* source, TString* env) {
 	ls->L = L;
 	ls->source = source;

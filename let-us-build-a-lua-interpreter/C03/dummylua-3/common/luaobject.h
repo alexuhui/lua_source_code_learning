@@ -224,6 +224,11 @@ typedef struct Upvaldesc {
     TString* name;
 } Upvaldesc;
 
+/**
+ * 编译结果
+ * 指令
+ * 一个Proto对应一个Chunk ？
+ */
 typedef struct Proto {
     CommonHeader;
     int is_vararg;

@@ -343,7 +343,14 @@ static int skipcommnet(LoadF* lf, int* c) {
 	return 0;
 }
 
-// load lua source code from file, and parse it
+/**
+ * load lua source code from file, and parse it
+ * 加载并解析lua脚本
+ * @param L lua_State
+ * @param reader 文本读取函数
+ * @param data 用于缓存数据的 LoadF 结构体
+ * @param filename 文件路径
+ **/ 
 int luaD_load(struct lua_State* L, lua_Reader reader, void* data, const char* filename) {
 	LoadF* lf = (LoadF*)data;
 
@@ -375,6 +382,9 @@ typedef struct SParser {
 	char* filename;
 } SParser;
 
+/**
+ * 加载、编译
+ */
 static int f_parser(struct lua_State* L, void* ud) {
 	SParser* p = (SParser*)ud;
 	LClosure* cl = luaY_parser(L, p->z, &p->buffer, &p->dyd, p->filename);

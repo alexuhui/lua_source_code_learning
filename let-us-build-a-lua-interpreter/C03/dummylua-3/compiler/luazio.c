@@ -12,6 +12,9 @@ void luaZ_init(struct lua_State* L, Zio* zio, lua_Reader reader, void* data) {
 	zio->reader = reader;
 }
 
+/**
+ * 填充 Zio (从文件读取代码)
+ */
 int luaZ_fill(Zio* z) {
 	int c = 0;
 

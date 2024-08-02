@@ -26,6 +26,10 @@ const lua_Reg reg[] = {
 	{ NULL, NULL },
 };
 
+/**
+ * 这个函数只需要将虚拟机实例指针传入即可。
+ * 它的主要工作就是将基础函数注册到全局表_G中，比如常用的print函数等。
+ */
 void luaL_openlibs(struct lua_State* L) {
 	for (int i = 0; i < sizeof(reg) / sizeof(reg[0]); i++) {
 		lua_Reg r = reg[i];

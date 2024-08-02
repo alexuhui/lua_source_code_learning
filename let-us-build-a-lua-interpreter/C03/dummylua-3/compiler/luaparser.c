@@ -13,6 +13,9 @@ static void suffixexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc*
 
 #define eqstr(a, b) ((a) == (b))
 
+/**
+ * 初始化表达式
+ */
 static void init_exp(expdesc* e, expkind k, int i) {
 	e->k = k;
 	e->u.info = i;
@@ -358,19 +361,30 @@ static void test_lexer(struct lua_State* L, LexState* ls) {
 	printf("total linenumber = %d", ls->linenumber);
 }
 
+/**
+ * 加载脚本，并编译
+ * 1）进行词法分析 分析结果保存在 LexState 
+ * 
+ */
 LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* dyd, const char* name) {
 	FuncState fs;
 	LexState ls;
+	// 初始化 ls
 	luaX_setinput(L, &ls, zio, buffer, dyd, luaS_newliteral(L, name), luaS_newliteral(L, LUA_ENV));
 	ls.current = zget(ls.zio);
 	
+	// 创建闭包，文件加载完，被包含在这个闭包里面
+	// 每个文件可以理解成一个顶级函数
 	LClosure* closure = luaF_newLclosure(L, 1);
+	// 创建Proto对象
 	closure->p = fs.p = luaF_newproto(L);
 
+	// 闭包设置到栈顶
 	setlclvalue(L->top, closure);
 	increase_top(L);
 	ptrdiff_t save_top = savestack(L, L->top);
 
+	//创建table，将常量保存在hash table方便快速查找
 	ls.h = luaH_new(L);
 	setgco(L->top, obj2gco(ls.h));
 	increase_top(L);
