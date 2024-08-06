@@ -1,5 +1,12 @@
 #include "luazio.h"
 
+/**
+* 初始化文字读取模块
+* @param L lua_State
+* @param zio 字符读取模块
+* @param reader 文件读取函数读取
+* @param data 读取数据
+*/
 void luaZ_init(struct lua_State* L, Zio* zio, lua_Reader reader, void* data) {
 	lua_assert(L);
 	lua_assert(zio);
@@ -13,7 +20,7 @@ void luaZ_init(struct lua_State* L, Zio* zio, lua_Reader reader, void* data) {
 }
 
 /**
- * 填充 Zio (从文件读取代码)
+ * 填充 Zio (从文件读取文本代码)
  */
 int luaZ_fill(Zio* z) {
 	int c = 0;

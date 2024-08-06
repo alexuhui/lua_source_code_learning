@@ -102,6 +102,9 @@ void luaD_throw(struct lua_State* L, int error) {
     }
 }
 
+/**
+* 以安全模式执行函数
+*/
 int luaD_rawrunprotected(struct lua_State* L, Pfunc f, void* ud) {
     int old_ncalls = L->ncalls;
     struct lua_longjmp lj;
@@ -296,8 +299,10 @@ static void reset_unuse_stack(struct lua_State* L, ptrdiff_t old_top) {
     }
 }
 
+//调用c函数
 int luaD_pcall(struct lua_State* L, Pfunc f, void* ud, ptrdiff_t oldtop, ptrdiff_t ef) {
     int status;
+    //保留函数调用现场，即将进入新的函数调用
     struct CallInfo* old_ci = L->ci;
     ptrdiff_t old_errorfunc = L->errorfunc;    
     
@@ -318,6 +323,12 @@ static int skipBOM(LoadF* lf) {
 	const char* bom = "\xEF\xBB\xBF";
 
 	do {
+        /**
+        * getc 函数通常用于逐字符读取文件内容
+        * getc 函数会尝试从指定的文件流中读取一个字符，
+        * ** 如果读取成功，则返回该字符对应的 ASCII 码值；
+        * ** 如果遇到文件结束（EOF），则返回一个特殊的值（通常是 -1）。
+        */
 		int c = (int)getc(lf->f);
 		if (c == EOF || c != *bom) {
 			return c;
@@ -361,6 +372,7 @@ int luaD_load(struct lua_State* L, lua_Reader reader, void* data, const char* fi
 		return LUA_ERRERR;
 	}
 
+    // 将首个字符保存到缓冲
 	lf->buff[lf->n++] = c;
 
 	Zio z;
@@ -387,16 +399,25 @@ typedef struct SParser {
  */
 static int f_parser(struct lua_State* L, void* ud) {
 	SParser* p = (SParser*)ud;
-	LClosure* cl = luaY_parser(L, p->z, &p->buffer, &p->dyd, p->filename);
-	if (cl) {
+    printf("luado, f_parser, ud.filename = %s\n", p->filename);
+    LClosure *cl = luaY_parser(L, p->z, &p->buffer, &p->dyd, p->filename);
+    if (cl) {
 		luaF_initupvals(L, cl);
 	}
 
 	return LUA_OK;
 }
 
+/**
+ * 受保护的解释器？
+ * @param L lua_State
+ * @param z 脚本读取模块
+ * @param filename 文件路径
+ */
 int luaD_protectedparser(struct lua_State* L, Zio* z, const char* filename) {
-	SParser p;
+    printf("luado, luaD_protectedparser, filename = %s\n", filename);
+    // f_parser 函数需要的参数
+    SParser p;
 	p.filename = (char*)filename;
 	p.z = z;
 	p.dyd.actvar.arr = NULL;

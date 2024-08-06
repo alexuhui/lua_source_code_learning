@@ -6,6 +6,9 @@
 #include "../common/lua.h"
 #include <ctype.h>
 
+/**
+ * 滑动到下一个字符
+ */
 #define next(ls) (ls->current = zget(ls->zio))
 #define save_and_next(L, ls, c) save(L, ls, c); ls->current = next(ls)
 #define currIsNewLine(ls) (ls->current == '\n' || ls->current == '\r')

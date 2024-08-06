@@ -39,6 +39,9 @@ static int newupvalues(FuncState* fs, expdesc* e, TString* n) {
 	return fs->nups++;
 }
 
+/**
+* 初始化 fs（FuncState）
+*/
 static void open_func(LexState* ls, FuncState* fs) {
 	fs->firstlocal = 0;
 	fs->freereg = 0;
@@ -288,11 +291,17 @@ static void close_func(struct lua_State* L, FuncState* fs) {
 	luaK_ret(fs, 0, 0);
 }
 
+/**
+ * 编译主方法
+ */
 static void mainfunc(struct lua_State* L, LexState* ls, FuncState* fs) {
+	printf("luaparser, mainfunc ------------------------");
 	expdesc e;
+	//初始化表达式
 	init_exp(&e, VLOCAL, 0);
 
 	open_func(ls, fs);
+	// 设置上值
 	newupvalues(fs, &e, fs->ls->env);
 
 	luaX_next(L, ls);
@@ -367,10 +376,12 @@ static void test_lexer(struct lua_State* L, LexState* ls) {
  * 
  */
 LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* dyd, const char* name) {
+	printf("luaparser, luaY_parser, name = %s\n", name);
 	FuncState fs;
 	LexState ls;
 	// 初始化 ls
 	luaX_setinput(L, &ls, zio, buffer, dyd, luaS_newliteral(L, name), luaS_newliteral(L, LUA_ENV));
+	//当前字符，这里像是第一个字符
 	ls.current = zget(ls.zio);
 	
 	// 创建闭包，文件加载完，被包含在这个闭包里面
@@ -389,6 +400,7 @@ LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* d
 	setgco(L->top, obj2gco(ls.h));
 	increase_top(L);
 
+	//编译主方法
 	mainfunc(L, &ls, &fs);
 	L->top = restorestack(L, save_top);
 

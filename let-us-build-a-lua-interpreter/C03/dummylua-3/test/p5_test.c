@@ -12,6 +12,7 @@ void p5_test_main() {
 	//对Lua代码进行编译
 	//生成的虚拟机指令保存在Lua虚拟机实例L中
 	int ok = luaL_loadfile(L, "./scripts/part05_test.lua");
+	// int ok = luaL_loadfile(L, "../../scripts/part05_test.lua");
 	if (ok == LUA_OK) {
 		// 运行已经编译好的虚拟机指令
 		luaL_pcall(L, 0, 0);

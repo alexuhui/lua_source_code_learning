@@ -68,6 +68,9 @@ typedef struct MBuffer {
 	int size;
 } MBuffer;
 
+/**
+ * 动态数据
+ */
 typedef struct Dyndata {
 	struct {
 		short* arr;

@@ -27,7 +27,10 @@ typedef char* (*lua_Reader)(struct lua_State* L, void* data, size_t* size);
 
 #define MIN_BUFF_SIZE 32 
 /**
- * 读取文件，并填充到Zio
+ * 读取字符
+ * 有点像滑动窗口，
+ * ** 如果Zio模块还没读完，n > 0, 就把Zio的缓冲指针p后移
+ * ** 否则，调用luaZ_fill方法填充Zio模块（读取一定长度的字符串到缓冲区）
  */
 #define zget(z) (((z)->n--) > 0 ? (*(z)->p++) : luaZ_fill(z))
 #define luaZ_resetbuffer(ls) (ls->buff->n = 0)
@@ -38,6 +41,7 @@ typedef char* (*lua_Reader)(struct lua_State* L, void* data, size_t* size);
  */
 typedef struct LoadF {
     FILE* f;
+    // 编码数组
     char buff[BUFSIZE]; // read the file stream into buff
 	int n;		       // how many char you have read
 } LoadF;

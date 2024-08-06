@@ -256,6 +256,12 @@ int luaL_stacksize(struct lua_State* L) {
     return lua_gettop(L);
 }
 
+/**
+ * 读取文本内容 （分段，一次读BUFSIZE大小）
+ * @param L lua_State
+ * @param data 文件内容
+ * @param sz 读取内容大小
+ */
 static char* getF(struct lua_State* L, void* data, size_t* sz) {
 	LoadF* lf = (LoadF*)data;
 	if (lf->n > 0) {
@@ -263,6 +269,10 @@ static char* getF(struct lua_State* L, void* data, size_t* sz) {
 		lf->n = 0;
 	}
 	else {
+		/**
+		* fread 函数是 C 语言标准库 <stdio.h> 中的一个函数，用于从文件中读取数据。
+		* 其功能是从给定的文件流中读取指定数量的数据项，每个数据项的大小由指定的字节数决定。
+		*/
 		*sz = fread(lf->buff, sizeof(char), BUFSIZE, lf->f);
 		lf->n = 0;
 	}
