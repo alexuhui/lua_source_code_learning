@@ -4,6 +4,10 @@
 #include "../common/luastate.h"
 #include "../common/luaobject.h"
 
+/**
+ * 新建Proto对象
+ * 用于存储编译结果
+ */
 Proto* luaF_newproto(struct lua_State* L) {
 	struct GCObject* gco = luaC_newobj(L, LUA_TPROTO, sizeof(Proto));
 	Proto* f = gco2proto(gco);

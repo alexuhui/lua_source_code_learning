@@ -60,7 +60,9 @@ typedef enum BinOpr {
 
 	NOBINOPR,
 } BinOpr;
-
+/**
+ * 表达式类型
+ */
 typedef enum expkind {
 	VVOID,			// expression is void
 	VNIL,			// expression is nil value
@@ -80,6 +82,9 @@ typedef enum expkind {
 	VNONRELOC,		// expression has result in a register, info field represents the pos of the stack
 } expkind;
 
+/**
+ * 表达式信息
+ */
 typedef struct expdesc {
 	expkind k;				// expkind
 	union {
@@ -115,7 +120,9 @@ typedef struct Labellist {
 	int n;
 	int size;
 } Labellist;
-
+/**
+ * 动态数据
+ */
 typedef struct Dyndata {
 	struct {
 		short* arr;

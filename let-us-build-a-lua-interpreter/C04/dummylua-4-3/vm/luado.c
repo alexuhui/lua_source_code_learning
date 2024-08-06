@@ -104,6 +104,9 @@ void luaD_throw(struct lua_State* L, int error) {
     }
 }
 
+/**
+* 以安全模式执行函数
+*/
 int luaD_rawrunprotected(struct lua_State* L, Pfunc f, void* ud) {
     int old_ncalls = L->ncalls;
     struct lua_longjmp lj;
@@ -123,6 +126,7 @@ int luaD_rawrunprotected(struct lua_State* L, Pfunc f, void* ud) {
 }
 
 static struct CallInfo* next_ci(struct lua_State* L, StkId func, int nresult) {
+    struct global_State* g = G(L);
     struct CallInfo* ci;
 
     if (L->ci->next) {
@@ -169,7 +173,10 @@ int luaD_precall(struct lua_State* L, StkId func, int nresult) {
             next_ci(L, func, nresult);                        
             int n = (*f)(L);
             assert(L->ci->func + n <= L->ci->top);
+            // 这个地方，感觉应该使用nresult作为返回值数量，但这个n是当前调用的函数（luaL_pushcfunction 压入的函数地址）的返回值
+            // 但看了一下lua源码也是这么干的
             luaD_poscall(L, L->top - n, n);
+            // luaD_poscall(L, L->top - nresult, nresult);
             return 1; 
         } break;
 		case LUA_TLCL: {
@@ -287,8 +294,14 @@ static void reset_unuse_stack(struct lua_State* L, ptrdiff_t old_top) {
     }
 }
 
+/**
+ * 调用函数
+ * @param f 函数
+ * @param ud 数据（函数参数）
+ */
 int luaD_pcall(struct lua_State* L, Pfunc f, void* ud, ptrdiff_t oldtop, ptrdiff_t ef) {
     int status;
+    //保留函数调用现场，即将进入新的函数调用
     struct CallInfo* old_ci = L->ci;
     ptrdiff_t old_errorfunc = L->errorfunc;    
     
@@ -309,6 +322,12 @@ static int skipBOM(LoadF* lf) {
 	const char* bom = "\xEF\xBB\xBF";
 
 	do {
+        /**
+        * getc 函数通常用于逐字符读取文件内容
+        * getc 函数会尝试从指定的文件流中读取一个字符，
+        * ** 如果读取成功，则返回该字符对应的 ASCII 码值；
+        * ** 如果遇到文件结束（EOF），则返回一个特殊的值（通常是 -1）。
+        */
 		int c = (int)getc(lf->f);
 		if (c == EOF || c != *bom) {
 			return c;
@@ -334,7 +353,14 @@ static int skipcommnet(LoadF* lf, int* c) {
 	return 0;
 }
 
-// load lua source code from file, and parse it
+/**
+ * load lua source code from file, and parse it
+ * 加载并解析lua脚本
+ * @param L lua_State
+ * @param reader 文本读取函数
+ * @param data 用于缓存数据的 LoadF 结构体
+ * @param filename 文件路径
+ **/ 
 int luaD_load(struct lua_State* L, lua_Reader reader, void* data, const char* filename) {
 	LoadF* lf = (LoadF*)data;
 
@@ -345,6 +371,8 @@ int luaD_load(struct lua_State* L, lua_Reader reader, void* data, const char* fi
 		return LUA_ERRERR;
 	}
 
+    // 将首个字符保存到缓冲
+    // 因为调用 skipcommnet 的时候取出了第一个字符
 	lf->buff[lf->n++] = c;
 
 	Zio z;
@@ -366,18 +394,31 @@ typedef struct SParser {
 	char* filename;
 } SParser;
 
+/**
+ * 加载、编译
+ */
 static int f_parser(struct lua_State* L, void* ud) {
 	SParser* p = (SParser*)ud;
-	LClosure* cl = luaY_parser(L, p->z, &p->buffer, &p->dyd, p->filename);
-	if (cl) {
+    printf("luado, f_parser, ud.filename = %s\n", p->filename);
+    // 进入编译流程
+    LClosure *cl = luaY_parser(L, p->z, &p->buffer, &p->dyd, p->filename);
+    if (cl) {
 		luaF_initupvals(L, cl);
 	}
 
 	return LUA_OK;
 }
 
+/**
+ * 安全的解释器
+ * @param L lua_State
+ * @param z 脚本读取模块
+ * @param filename 文件路径
+ */
 int luaD_protectedparser(struct lua_State* L, Zio* z, const char* filename) {
-	SParser p;
+    printf("luado, luaD_protectedparser, filename = %s\n", filename);
+    // f_parser 函数需要的参数
+    SParser p;
 	p.filename = (char*)filename;
 	p.z = z;
 	p.dyd.actvar.arr = NULL;
@@ -387,6 +428,7 @@ int luaD_protectedparser(struct lua_State* L, Zio* z, const char* filename) {
 	p.dyd.labellist.arr = NULL;
 	p.dyd.labellist.n = p.dyd.labellist.size = 0;
 
+    // 调用f_parser函数
 	int status = luaD_pcall(L, f_parser, (void*)(&p), savestack(L, L->top), L->errorfunc);
 	if (status != LUA_OK) {
 		LUA_ERROR(L, "luaD_protectedparser call f_parser failure\n");

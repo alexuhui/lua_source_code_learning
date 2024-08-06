@@ -6,6 +6,9 @@
 #include "../common/lua.h"
 #include <ctype.h>
 
+/**
+ * 滑动到下一个字符
+ */
 #define next(ls) (ls->current = zget(ls->zio))
 #define save_and_next(L, ls, c) save(L, ls, c); ls->current = next(ls)
 #define currIsNewLine(ls) (ls->current == '\n' || ls->current == '\r')
@@ -33,6 +36,9 @@ void luaX_init(struct lua_State* L) {
 	}
 }
 
+/**
+ * 初始化 ls (LexState)
+ */
 void luaX_setinput(struct lua_State* L, LexState* ls, Zio* z, struct MBuffer* buffer, struct Dyndata* dyd, TString* source, TString* env) {
 	ls->L = L;
 	ls->source = source;
@@ -195,6 +201,9 @@ static int str2number(LexState* ls, bool has_dot) {
 	}
 }
 
+/**
+ * 逐个字符解析
+ */
 static int llex(LexState* ls, Seminfo* seminfo) {
 	for (;;) {
 		luaZ_resetbuffer(ls);
@@ -384,6 +393,9 @@ static int llex(LexState* ls, Seminfo* seminfo) {
 	return TK_EOS;
 }
 
+/**
+ * 通过“滑动窗口”逐条解析token
+ */
 int luaX_next(struct lua_State* L, LexState* ls) {
 	if (ls->lookahead.token != TK_EOS) {
 		ls->t.token = ls->lookahead.token;

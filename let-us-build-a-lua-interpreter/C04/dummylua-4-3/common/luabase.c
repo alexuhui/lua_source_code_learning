@@ -145,7 +145,11 @@ const lua_Reg base_reg[] = {
 	{ NULL, NULL },
 };
 
-int luaB_openbase(struct lua_State* L) {
+/**
+ * 注册一些内置函数
+ */
+int luaB_openbase(struct lua_State* L)
+{
 	lua_pushglobaltable(L);
 
 	for (int i = 0; i < (sizeof(base_reg) / sizeof(base_reg[0])); i++) {

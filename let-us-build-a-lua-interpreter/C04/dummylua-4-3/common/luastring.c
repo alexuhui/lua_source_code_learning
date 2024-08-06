@@ -105,6 +105,7 @@ static struct TString* createstrobj(struct lua_State* L, const char* str, int ta
 }
 
 // only short strings can be interal
+// 短字符串，保存在一个内部哈希表，缓存起来
 static struct TString* internalstr(struct lua_State* L, const char* str, unsigned int l) {
     struct global_State* g = G(L);
     struct stringtable* tb = &g->strt;
@@ -133,6 +134,12 @@ static struct TString* internalstr(struct lua_State* L, const char* str, unsigne
     return ts;
 }
 
+/**
+ * 创建字符串
+ * @param L lua_State
+ * @param str 字符串首指针
+ * @param l 字符串长度
+ */
 struct TString* luaS_newlstr(struct lua_State* L, const char* str, unsigned int l) {
     if (l <= MAXSHORTSTR) {
         return internalstr(L, str, l); 

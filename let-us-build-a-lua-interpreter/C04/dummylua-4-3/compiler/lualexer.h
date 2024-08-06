@@ -85,6 +85,14 @@ typedef struct Token {
     Seminfo seminfo;    // token info
 } Token;
 
+/**
+ * 词法分析结果载体
+ * 
+ * 通过luaX_next接口读出来的token会被存放在LexState结构的t变量里，
+ * 以供语法分析器晚些时候使用。
+ * 词法分析器在进行解析时，一次只会读取一个字符，然后再进行处理。
+ * 而字符需要从文件里读取，这部分操作是通过Zio模块来执行的
+ */
 typedef struct LexState {
 	Zio* zio;		// get a char from stream
     int current;	// current char in file

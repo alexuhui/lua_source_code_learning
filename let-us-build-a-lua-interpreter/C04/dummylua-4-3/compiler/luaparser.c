@@ -28,6 +28,9 @@ static bool block_follow(struct lua_State* L, LexState* ls);
 #define check_condition(ls, c, s) if(!(c)) luaX_syntaxerror(ls->L, ls, s)
 #define hasmulret(v) ((v)->k == VCALL)
 
+/**
+ * 初始化表达式
+ */
 static void init_exp(expdesc* e, expkind k, int i) {
 	e->k = k;
 	e->u.info = i;
@@ -53,6 +56,9 @@ static int newupvalues(FuncState* fs, expdesc* e, TString* n) {
 	return fs->nups++;
 }
 
+/**
+* 初始化 fs（FuncState）
+*/
 static void open_func(LexState* ls, FuncState* fs) {
 	fs->bl = NULL;
 
@@ -1158,19 +1164,29 @@ static void close_func(struct lua_State* L, FuncState* fs) {
 	ls->fs = fs->prev;
 }
 
+/**
+ * 编译主方法
+ */
 static void mainfunc(struct lua_State* L, LexState* ls, FuncState* fs) {
+	printf("luaparser, mainfunc ------------------------");
 	expdesc e;
+	//初始化表达式
 	init_exp(&e, VLOCAL, 0);
 
 	BlockCnt bl;
 	open_func(ls, fs);
+	// 设置上值
 	newupvalues(fs, &e, fs->ls->env);
 
+	// 开始逐个字符解析脚本
 	luaX_next(L, ls);
 	enterblock(L, ls, &bl, 0);
+	/**
+	 * 拿到第一个token之后，进入语句解析
+	 * 在内部继续调用luaX_next反复获取token
+	 */
 	statlist(L, ls, fs);
 	leaveblock(L, ls);
-
 	close_func(L, fs);
 }
 
@@ -1235,23 +1251,35 @@ static void test_lexer(struct lua_State* L, LexState* ls) {
 	printf("total linenumber = %d", ls->linenumber);
 }
 
+/**
+ * 编译流程入口
+ */
 LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* dyd, const char* name) {
+	printf("luaparser, luaY_parser, name = %s\n", name);
 	FuncState fs;
 	LexState ls;
+	// 初始化 ls
 	luaX_setinput(L, &ls, zio, buffer, dyd, luaS_newliteral(L, name), luaS_newliteral(L, LUA_ENV));
+	//当前字符，这里像是第一个字符
 	ls.current = zget(ls.zio);
 	
+	// 创建闭包，文件加载完，被包含在这个闭包里面
+	// 每个文件可以理解成一个顶级函数
 	LClosure* closure = luaF_newLclosure(L, 1);
+	// 创建Proto对象
 	closure->p = fs.p = luaF_newproto(L);
 
+	// 闭包设置到栈顶
 	setlclvalue(L->top, closure);
 	increase_top(L);
 	ptrdiff_t save_top = savestack(L, L->top);
 
+	//创建table，将常量保存在hash table方便快速查找
 	ls.h = luaH_new(L);
 	setgco(L->top, obj2gco(ls.h));
 	increase_top(L);
 
+	//编译主方法
 	mainfunc(L, &ls, &fs);
 	L->top = restorestack(L, save_top);
 
