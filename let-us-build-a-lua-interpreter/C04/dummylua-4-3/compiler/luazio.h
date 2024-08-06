@@ -55,6 +55,7 @@ typedef struct LoadF {
  */
 typedef struct Zio {
 	lua_Reader reader;		// read buffer to p
+    //n表示LoadF结构的buff中还剩下多少个未读取的字符
 	int n;					// the number of unused bytes
 	char* p;				// the pointer to buffer
 	void* data;				// structure which holds FILE handler

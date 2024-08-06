@@ -1258,7 +1258,7 @@ LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* d
 	printf("luaparser, luaY_parser, name = %s\n", name);
 	FuncState fs;
 	LexState ls;
-	// 初始化 ls
+	// 对词法分析器实例进行初始化
 	luaX_setinput(L, &ls, zio, buffer, dyd, luaS_newliteral(L, name), luaS_newliteral(L, LUA_ENV));
 	//当前字符，这里像是第一个字符
 	ls.current = zget(ls.zio);
