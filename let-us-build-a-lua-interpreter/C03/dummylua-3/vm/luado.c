@@ -299,7 +299,11 @@ static void reset_unuse_stack(struct lua_State* L, ptrdiff_t old_top) {
     }
 }
 
-//调用c函数
+/**
+ * 调用函数
+ * @param f 函数
+ * @param ud 数据（函数参数）
+ */
 int luaD_pcall(struct lua_State* L, Pfunc f, void* ud, ptrdiff_t oldtop, ptrdiff_t ef) {
     int status;
     //保留函数调用现场，即将进入新的函数调用
@@ -401,6 +405,7 @@ typedef struct SParser {
 static int f_parser(struct lua_State* L, void* ud) {
 	SParser* p = (SParser*)ud;
     printf("luado, f_parser, ud.filename = %s\n", p->filename);
+    // 进入编译流程
     LClosure *cl = luaY_parser(L, p->z, &p->buffer, &p->dyd, p->filename);
     if (cl) {
 		luaF_initupvals(L, cl);
@@ -410,7 +415,7 @@ static int f_parser(struct lua_State* L, void* ud) {
 }
 
 /**
- * 受保护的解释器？
+ * 安全的解释器
  * @param L lua_State
  * @param z 脚本读取模块
  * @param filename 文件路径
@@ -426,6 +431,7 @@ int luaD_protectedparser(struct lua_State* L, Zio* z, const char* filename) {
 	p.dyd.actvar.size = p.buffer.size = 0;
 	p.dyd.actvar.n = p.buffer.n = 0;
 
+    // 调用f_parser函数
 	int status = luaD_pcall(L, f_parser, (void*)(&p), savestack(L, L->top), L->errorfunc);
 	if (status != LUA_OK) {
 		LUA_ERROR(L, "luaD_protectedparser call f_parser failure\n");

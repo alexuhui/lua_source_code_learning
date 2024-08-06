@@ -156,6 +156,9 @@ static int str2number(LexState* ls, bool has_dot) {
 	}
 }
 
+/**
+ * 逐个字符解析
+ */
 static int llex(LexState* ls, Seminfo* seminfo) {
 	for (;;) {
 		luaZ_resetbuffer(ls);
@@ -335,6 +338,9 @@ static int llex(LexState* ls, Seminfo* seminfo) {
 	return TK_EOS;
 }
 
+/**
+ * 通过“滑动窗口”逐条解析token
+ */
 int luaX_next(struct lua_State* L, LexState* ls) {
 	ls->t.token = llex(ls, &ls->t.seminfo);
 	return ls->t.token;

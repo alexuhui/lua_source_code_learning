@@ -304,7 +304,12 @@ static void mainfunc(struct lua_State* L, LexState* ls, FuncState* fs) {
 	// 设置上值
 	newupvalues(fs, &e, fs->ls->env);
 
+	// 开始逐个字符解析脚本
 	luaX_next(L, ls);
+	/**
+	 * 拿到第一个token之后，进入语句解析
+	 * 在内部继续调用luaX_next反复获取token
+	 */
 	statlist(L, ls, fs);
 	close_func(L, fs);
 }
@@ -371,9 +376,7 @@ static void test_lexer(struct lua_State* L, LexState* ls) {
 }
 
 /**
- * 加载脚本，并编译
- * 1）进行词法分析 分析结果保存在 LexState 
- * 
+ * 编译流程入口
  */
 LClosure* luaY_parser(struct lua_State* L, Zio* zio, MBuffer* buffer, Dyndata* dyd, const char* name) {
 	printf("luaparser, luaY_parser, name = %s\n", name);
