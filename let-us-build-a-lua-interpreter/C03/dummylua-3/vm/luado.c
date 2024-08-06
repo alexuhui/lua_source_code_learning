@@ -373,6 +373,7 @@ int luaD_load(struct lua_State* L, lua_Reader reader, void* data, const char* fi
 	}
 
     // 将首个字符保存到缓冲
+    // 因为调用 skipcommnet 的时候取出了第一个字符
 	lf->buff[lf->n++] = c;
 
 	Zio z;
