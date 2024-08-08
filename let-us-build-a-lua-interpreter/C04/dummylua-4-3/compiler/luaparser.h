@@ -26,15 +26,21 @@ SOFTWARE.*/
 
 #define UNOPR_PRIORITY 12
 
+/**
+ * 单目运算符
+ */
 typedef enum UnOpr {
-	UNOPR_MINUS,
-	UNOPR_LEN,
-	UNOPR_BNOT,
-	UNOPR_NOT,
+	UNOPR_MINUS,// 负数
+	UNOPR_LEN, // 长度计算 #
+	UNOPR_BNOT, // 二进制 按位非
+	UNOPR_NOT,  // 逻辑非运算
 
-	NOUNOPR,
+	NOUNOPR,  // ??
 } UnOpr;
 
+/**
+ * 双目运算符
+ */
 typedef enum BinOpr {
 	BINOPR_ADD = 0,
 	BINOPR_SUB,
@@ -84,6 +90,8 @@ typedef enum expkind {
 
 /**
  * 表达式信息
+ * expdesc是非常重要的数据结构，用来临时存储表达式的重要变量。
+ * 而在编译的过程中，往往又需要复用这个结构，以节约内存和提升效率
  */
 typedef struct expdesc {
 	expkind k;				// expkind
@@ -156,6 +164,9 @@ typedef struct FuncState {
 	int freereg;		// free register index
 } FuncState;
 
+/**
+ * 前缀表达式结构，类似链表
+ */
 typedef struct LH_assign {
 	struct LH_assign* prev;
 	expdesc	   v;

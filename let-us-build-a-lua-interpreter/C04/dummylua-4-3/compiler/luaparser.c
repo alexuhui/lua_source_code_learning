@@ -160,6 +160,9 @@ static void singlevar(FuncState* fs, expdesc* e, TString* n) {
 	}
 }
 
+/**
+ * 原子表达式
+ */
 static void primaryexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc* e) {
 	switch (ls->t.token) {
 	case TK_NAME: {
@@ -326,6 +329,9 @@ static void simpleexp(FuncState* fs, expdesc* e) {
 	}
 }
 
+/**
+ * 单目运算符
+ */
 static UnOpr getunopr(LexState* ls) {
 	switch (ls->t.token) {
 	case '-': return UNOPR_MINUS;
@@ -376,15 +382,20 @@ static const struct {
 	{2,2}, {1,1},			   // 'and' and 'or'
 };
 
+/**
+ * 子表达式
+ */
 static int subexpr(FuncState* fs, expdesc* e, int limit) {
 	LexState* ls = fs->ls;
 	int unopr = getunopr(ls);
 
+	// 单目运算
 	if (unopr != NOUNOPR) {
 		luaX_next(fs->ls->L, fs->ls);
 		subexpr(fs, e, UNOPR_PRIORITY);
 		luaK_prefix(fs, unopr, e);
 	}
+	// 简单表达式
 	else simpleexp(fs, e);
 
 	int binopr = getbinopr(ls);
@@ -512,6 +523,9 @@ static void yindex(struct lua_State* L, FuncState* fs, expdesc* e) {
 	checknext(L, fs->ls, ']');
 }
 
+/**
+ * 前缀表达式
+ */
 static void suffixedexp(struct lua_State* L, LexState* ls, FuncState* fs, expdesc* e) {
 	primaryexp(L, ls, fs, e);
 	luaX_next(L, ls);
@@ -569,6 +583,9 @@ static void adjust_assign(FuncState* fs, int nvars, int nexps, expdesc* e) {
 	}
 }
 
+/**
+ * 赋值
+ */
 static void assignment(FuncState* fs, LH_assign* v, int nvars) {
 	expdesc* var = &v->v;
 	check_condition(fs->ls, vkisvar(var), "not var");
@@ -1044,6 +1061,9 @@ static void localfunc(struct lua_State* L, LexState* ls, FuncState* fs) {
 	luaK_storevar(fs, &e, &e2);
 }
 
+/**
+ * 表达式语句
+ */
 static void exprstat(struct lua_State* L, LexState* ls, FuncState* fs) {
 	LH_assign lh;
 	suffixedexp(L, ls, fs, &lh.v);
@@ -1093,6 +1113,9 @@ static void retstat(struct lua_State* L, LexState* ls, FuncState* fs) {
 	luaK_ret(fs, first_result, e.k == VCALL ? LUA_MULRET:nexp);
 }
 
+/**
+ * 语句解析
+ */
 static void statement(struct lua_State* L, LexState* ls, FuncState* fs) {
 	switch (ls->t.token) {
 	case TK_IF: {
@@ -1151,6 +1174,9 @@ static bool block_follow(struct lua_State* L, LexState* ls) {
 	return false;
 }
 
+/**
+ * 语句列表
+ */
 static void statlist(struct lua_State* L, LexState* ls, FuncState* fs) {
 	while (!block_follow(L, ls)) {
 		statement(L, ls, fs);
