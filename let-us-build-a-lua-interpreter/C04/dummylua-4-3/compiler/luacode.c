@@ -324,6 +324,10 @@ void luaK_exp2val(FuncState* fs, expdesc* e) {
 	}
 }
 
+/**
+ * 将一个表达式转换为常量或寄存器值（Register or Constant，简称 RK）
+ * 这里K代表立即数？
+ */
 int luaK_exp2RK(FuncState* fs, expdesc* e) {
 	luaK_exp2val(fs, e);
 	switch (e->k) {
@@ -600,6 +604,11 @@ static void checkstack(FuncState* fs, int n) {
 	}
 }
 
+/**
+ * 保留寄存器
+ * @param fs 编译器上下文
+ * @param n 寄存器数量
+ */
 void luaK_reserveregs(FuncState* fs, int n) {
 	checkstack(fs, n);
 	fs->freereg += n;
@@ -734,6 +743,13 @@ static int exp2reg(FuncState* fs, expdesc* e, int reg) {
 	return e->u.info;
 }
 
+/**
+ * 表达式 (expression) -> 寄存器（register）
+ * 在 Lua 中，函数调用和表达式的计算结果通常会被存储在寄存器中，以便后续的操作可以快速访问这些结果。
+ * luaK_exp2nextreg 函数的作用就是将表达式的计算结果分配到一个空闲的寄存器中，并返回这个寄存器的编号。
+ * ** 具体来说，luaK_exp2nextreg 函数接受两个参数：一个是编译器上下文（FuncState *fs），另一个是要转换的表达式（exp）。
+ * ** 函数会根据表达式的类型和编译器的状态，将表达式的结果分配到一个空闲的寄存器中，并更新编译器上下文中的寄存器分配信息。
+ */
 int luaK_exp2nextreg(FuncState* fs, expdesc* e) {
 	luaK_dischargevars(fs, e);
 	freeexp(fs, e);
