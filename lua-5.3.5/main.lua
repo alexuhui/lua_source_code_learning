@@ -1,1 +1,1 @@
-print('ttttt')
+print(math.huge)
