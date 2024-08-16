@@ -612,7 +612,8 @@ int main (int argc, char **argv) {
     struct lua_State* L = luaL_newstate();
     luaL_openlibs(L);
 
-    dofile(L, "../../main.lua");
+    // dofile(L, "../../main.lua");
+    dofile(L, "./main.lua");
     lua_close(L);
 
     return 0;

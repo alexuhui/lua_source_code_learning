@@ -34,6 +34,7 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
+#include "yhlib.h"
 
 /*
 ** these libs are loaded by lua.c and are readily available to any Lua
@@ -50,6 +51,8 @@ static const luaL_Reg loadedlibs[] = {
   {LUA_MATHLIBNAME, luaopen_math},
   {LUA_UTF8LIBNAME, luaopen_utf8},
   {LUA_DBLIBNAME, luaopen_debug},
+  // custom lib
+  {LUA_YHLIBNAME, luaopen_yhlib},
 #if defined(LUA_COMPAT_BITLIB)
   {LUA_BITLIBNAME, luaopen_bit32},
 #endif
