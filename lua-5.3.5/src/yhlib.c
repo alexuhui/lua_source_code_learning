@@ -2,7 +2,7 @@
 
 static int yh_add(lua_State *L){
     int n = lua_gettop(L);  /* number of arguments */
-    luaL_argcheck(L, n >= 1, 1, "value expected");
+    luaL_argcheck(L, n >= 1, 1, "at least one parameter expected");
     int isF = 0;
     lua_Integer iSum = 0;
     lua_Number fSum = 0.0;

@@ -14,3 +14,5 @@
 local sum = yhlib.add(1, 2, 3, 5.0)
 print(sum, math.type(sum))
 print(math.min(1, 2, 3, 4))
+local t = yhlib.add(2, 3, 8)
+print(t)
